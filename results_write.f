@@ -1,5 +1,7 @@
 	subroutine results_ntu_write(main,vertex,orig,recon,success)
 
+! here orig and main are switched	
+
 	implicit none
 	include 'radc.inc'
 	include 'hbook.inc'
@@ -60,7 +62,7 @@
      >		/ sqrt(recon%uq%y**2+recon%uq%z**2)
 	  Pm_Heepx =  -recon%Pmx
 	endif
-
+	
 	if(electron_arm.eq.1 .or. electron_arm.eq.3.or. electron_arm.eq.7)then !electron = right side.
 	  ntu(1) = recon%e%delta
 	  ntu(2) = recon%e%yptar			!mr

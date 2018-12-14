@@ -1,7 +1,8 @@
 # setup directory to run simc
-
+# where simc is located
 SIMCDIR=/data/boeglin.1/HallC/GitHub/deut_simc/
 
+# where the laget directory resides
 LAGETDIR=/data/boeglin.1/mceep_3.9/dat/deut_laget
 #
 ln -s $LAGETDIR

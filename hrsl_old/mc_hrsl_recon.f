@@ -110,10 +110,10 @@ C Reset COSY sums.
 C Convert hut quantities to right-handed coordinates, in meters and "radians".
 C Make sure hut(5) is non-zero, to avoid taking 0.0**0 (which crashes)
 
-	hut(1) = xs/100.		!cm --> m
-	hut(2) = dxdzs			!slope ("radians")
-	hut(3) = ys/100.		!cm --> m
-	hut(4) = dydzs			!slope ("radians")
+	hut(1) = xs/100. 		!cm --> m
+	hut(2) = dxdzs   		!slope ("radians")
+	hut(3) = ys/100. 		!cm --> m
+	hut(4) = dydzs   		!slope ("radians")
 	hut(5) = fry/100.		!vert. position at target(cm-->m)
 	if (abs(hut(5)).le.1.d-30) hut(5)=1.d-30
 

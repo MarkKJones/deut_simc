@@ -214,6 +214,7 @@ cdg	call time (timestring1(11:23))
 
 	  if(debug(3)) write(6,*)'sim: before mc: orig.p.E =',orig%p%E
 	  if(success)call montecarlo(orig,main,recon,success)
+	  
 	  if(debug(2)) write(6,*)'sim: after mc, success =',success
 
 ! ... calculate everything else about the event
@@ -1306,7 +1307,7 @@ c	enddo
 	real*8 x_E_arm,y_E_arm,z_E_arm,dx_E_arm,dy_E_arm,delta_E_arm
 	real*8 x_P_arm,y_P_arm,z_P_arm,dx_P_arm,dy_P_arm,delta_P_arm
 	real*8 xfp, yfp, dxfp, dyfp
-	real*8 eloss_E_arm, eloss_P_arm, r, beta, dangles(2), dang_in(2)
+	real*8 eloss_E_arm, eloss_P_arm, r, beta, dangles(2), dang_in(2), devs(4)
 	real*8 dangles_extra(2)
 	logical success
 	logical ok_E_arm, ok_P_arm
@@ -1477,6 +1478,14 @@ C DJG moved this to the last part of generate!!!
 !	resmult=resolution factor for DCs (see simulate.inc)
 !	vertical position at target (for reconstruction w/raster MEs).
 !	ok flag
+!       reconstructed quantities
+!
+!       are returned and possibly overwritten
+!	  
+!       delta_P_arm
+!       dx_P_arm
+!       dy_P_arm
+!       y_P_arm	  
 
 	  m2 = Mh2
 	  pathlen = 0.0
@@ -1505,9 +1514,17 @@ C DJG moved this to the last part of generate!!!
      >		y_P_arm, z_P_arm, dx_P_arm, dy_P_arm, xfp, dxfp, yfp, dyfp,
      >		m2, mc_smear, mc_smear, doing_decay,
      >		ntup%resfac, fry, ok_P_arm, pathlen, hadron_arm, use_first_cer)
+	 endif
+	 
+!       WB 2018 add additional smearing for reconstructed variables
+	  if (recon_mc_smear_addl) then
+	     call extra_smear(4, spec%p%sig_smear, devs)
+	     y_P_arm	 = y_P_arm + devs(1)	  
+	     dx_P_arm	 = dx_P_arm + devs(2)	  	
+	     dy_P_arm	 = dy_P_arm + devs(3)	  	
+	     delta_P_arm = delta_P_arm + devs(4)
 	  endif
-
-
+	 
 C DJG Do polarized target field stuff if needed
 C DJG Note that the call to track_to_tgt is with -fry: for some reason that routine then
 C DJG sets xx=-fry, and calls mc_hms_recon with xx, so it all works out. Whatever.
@@ -1610,7 +1627,7 @@ C	  recon%p%delta = (recon%p%P-spec%p%P)/spec%p%P*100.
 ! ... multiple scattering
 
 	if (mc_smear) then
-	  call target_musc(orig%e%p, beta_electron, main%target%teff(2), dangles)
+	   call target_musc(orig%e%p, beta_electron, main%target%teff(2), dangles)
 	else
 	  dangles(1)=0.0
 	  dangles(2)=0.0
@@ -1626,7 +1643,12 @@ C	  recon%p%delta = (recon%p%P-spec%p%P)/spec%p%P*100.
 ! WB this is most likely wrong !
 !	main%SP%e%xptar = orig%e%xptar + dangles(2) + dangles_extra(1) + dang_in(2)*spec%p%cos_th
 	main%SP%e%xptar = orig%e%xptar + dangles(2) + dangles_extra(2) + dang_in(2)*spec%e%cos_th
+! for testing this is correct	
+!	write(45, *)  orig%e%xptar,  orig%e%yptar,  main%SP%e%xptar,  main%SP%e%yptar
+!	print *, '----------------------------------------------------------------------'
+!	print *, "orig main e yptar:", orig%e%xptar, main%SP%e%yptar
 
+	
 ! CASE 1: Using the spectrometer Monte Carlo
 
 	if (using_E_arm_montecarlo) then
@@ -1734,6 +1756,14 @@ C	  recon%p%delta = (recon%p%P-spec%p%P)/spec%p%P*100.
 	  endif
 	  ntup%resfac=ntup%resfac+tmpfact
 
+!       WB 2018 add addition smearing for reconstructed variables
+	  if (recon_mc_smear_addl) then
+	     call extra_smear(4, spec%e%sig_smear, devs)
+	     y_E_arm	 = y_E_arm + devs(1)	  
+	     dx_E_arm	 = dx_E_arm + devs(2)	  	
+	     dy_E_arm	 = dy_E_arm + devs(3)	  	
+	     delta_E_arm = delta_E_arm + devs(4)
+	  endif
 
 C DJG Do polarized target field stuff if needed
 C DJG Note that the call to track_to_tgt is with -fry: for some reason that routine then
@@ -1939,3 +1969,26 @@ c	recon.e.delta = (recon.e.P-spec.e.P)/spec.e.P*100.
 
 	return
 	end
+
+
+!------------------------------------------------------------------
+
+	subroutine extra_smear(n, sigma, values)
+
+	implicit none
+
+	integer n, i
+	real*8 sigma(n) , values(n)
+	real*8 gauss1, nsig_max
+
+	parameter (nsig_max = 3.5)
+
+! Compute additional smearing 
+! Generate two Gaussian numbers BELOW nsig_max.
+
+	do i = 1, n
+	   values(i) = sigma(i) * gauss1(nsig_max)
+	enddo
+	return
+	end
+	
