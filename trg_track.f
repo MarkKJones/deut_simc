@@ -486,7 +486,7 @@ CGAW              B_field_z(iz,ir) = 0.0
                                                                              
       SUBROUTINE trgRK4(u0,u1,h,spect)
       IMPLICIT NONE
-      REAL*8     u0(6),u1(6),h
+      REAL*8     u0(9),u1(9),h
 * --  Fourth-order Runge-Kutta from Numerical Recipes book
 *     for tracking through the target field 
 *
