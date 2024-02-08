@@ -605,18 +605,20 @@ C DJG:
 	    call sf_lookup_init(tmpfile,.true.)                 !the true flag calls the proton S.F.
 	  else if ((nint(targ%A).eq.3).and.(nint(targ%Z).eq.1)) then
 	    call sf_lookup_init(tmpfile,.false.)                !the false flag calls the neutron S.F.
-	  endif
+	  else
 ! Choos proton or neutron spectral function based on targ.Mtar_struck
-!	  if (abs(targ%Mtar_struck-Mp).le.1.d-6) then
-!	    call sf_lookup_init(tmpfile,.true.)			!proton S.F.
-!	  else if (abs(targ%Mtar_struck-Mn).le.1.d-6) then
-!	    call sf_lookup_init(tmpfile,.false.)		!neutron S.F.
-!	  else
-!	    write(6,*) 'targ%Mtar_struck = ',targ%Mtar_struck
-!	    write(6,*) 'targ%Mtar_struck not equal to Mp or Mn'
-!	    write(6,*) 'DEFAULTING TO PROTON SPECTRAL FUNCTION!!!'
-!	    call sf_lookup_init(tmpfile,.true.)			!proton S.F.
-!	   endif
+	  if (abs(targ%Mtar_struck-Mp).le.1.d-6) then
+	    call sf_lookup_init(tmpfile,.true.)			!proton S.F.
+	  else if (abs(targ%Mtar_struck-Mn).le.1.d-6) then
+	    call sf_lookup_init(tmpfile,.false.)		!neutron S.F.
+	  else
+	    write(6,*) 'targ%Mtar_struck = ',targ%Mtar_struck
+	    write(6,*) 'targ%Mtar_struck not equal to Mp or Mn'
+	    write(6,*) 'DEFAULTING TO PROTON SPECTRAL FUNCTION!!!'
+	    call sf_lookup_init(tmpfile,.true.)			!proton S.F.
+	   endif
+	   write(*,*) " using file = " ,tmpfile
+	   endif
 	endif
 ! *****************************************************************************
 
